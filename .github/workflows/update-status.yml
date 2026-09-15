@@ -1,0 +1,25 @@
+name: Update status cache
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch status.cafe data
+        run: curl -s https://status.cafe/users/neant/status.json -o status.json
+
+      - name: Commit if changed
+        run: |
+          git config user.name "status-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git diff --quiet status.json || (git add status.json && git commit -m "update status")
+          git push
